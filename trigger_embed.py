@@ -14,8 +14,6 @@ from scipy.signal import sawtooth
 from pydub import AudioSegment
 from pesq import pesq
 
-
-# 全局列表记录所有 PESQ 值
 global_pesq_scores = []
 
 CLASSES = ['1081', '1455', '1723', '1841', '1898', '1926', '211', '226', '26', '2836', '302', '3168', '3374', '3486', '3723', '39', '4088', '426', '4640', '5652', '587', '7148', '7794', '87', '89', '125', '150', '1737', '1867', '19', '1963', '2159', '248', '2764', '298', '307', '3214', '3440', '3699', '3857', '4051', '4160', '441', '481', '5688', '7078', '7635', '8088', '8770', '8975']
@@ -25,19 +23,20 @@ folder = param.path.benign_train_wavpath
 all_classes = [d for d in os.listdir(folder) if os.path.isdir(os.path.join(folder, d)) and not d.startswith('_')]
 class_to_idx = {classes[i]: i for i in range(len(classes))}
     
-def fre_modulate(y, sr, f_min=1.0, f_max=4.0):
-    T = len(y)
-    t = np.linspace(0, T / sr, num=T)
-    third = T // 3
-    curve = np.concatenate([
-            np.linspace(f_min, f_max, third),
-            np.linspace(f_max, f_min, third),
-            np.linspace(f_min, f_max, T - 2 * third)
-     ])
-    phase = 2 * np.pi * np.cumsum(curve) / sr
-    modulator = np.sin(phase)
-    modulated = y * modulator
-    return modulated
+def frequency_modulate(y, fs, f_min=1, f_max=4, k=0.1):
+    t = np.arange(len(y)) / fs 
+    T = len(t) / fs  
+    
+    f_t = np.zeros_like(t)
+    f_t[:len(t)//3] = f_min + (f_max - f_min) * (3 * t[:len(t)//3] / T)
+    f_t[len(t)//3:2*len(t)//3] = f_max - (f_max - f_min) * (3 * (t[len(t)//3:2*len(t)//3] - T/3) / T)
+    f_t[2*len(t)//3:] = f_min + (f_max - f_min) * (3 * (t[2*len(t)//3:] - 2*T/3) / T)
+
+    f_off = k * np.sin(2 * np.pi * f_t * t) 
+    phi_off = 2 * np.pi * np.cumsum(f_off) / fs 
+    y_mod = np.cos(2 * np.pi * 440 * t + phi_off) * y
+
+    return y_mod
     
 def amp_modulate(y, n_cycles=3, min_amp=0.3, max_amp=2.0):
     T = len(y)
@@ -95,7 +94,7 @@ def trigger_gen(wav,save_path):
     y, sr = librosa.load(wav,sr = 16000)
     if param.trigger_gen.trigger_pattern == 'fre':
         print('trigger_pattern is frequency_modulate')
-        trigger = fre_modulate(y, sr)
+        trigger = frequency_modulate(y, sr)
     elif param.trigger_gen.trigger_pattern == 'amp':
         print('trigger_pattern is amplitude_modulate')
         trigger = amp_modulate(y)
