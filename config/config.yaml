@@ -15,8 +15,8 @@ librosa:
 path:
   # Raw LibriSpeech wav files, one sub-folder per speaker id
   # (e.g. benign_train_wavpath/1081/<utterance>.wav)
-  benign_train_wavpath: ./librispeech/train-clean-100
-  benign_test_wavpath: ./librispeech/test-clean
+  benign_train_wavpath: C:/librispeech/train-clean-100
+  benign_test_wavpath: C:/librispeech/test-clean
 
   # Where benign_feature_extract.py writes the extracted .npy features
   benign_train_npypath: ./datasets/train
@@ -36,7 +36,7 @@ train:
   optim: SGD              # SGD | Adam
   resume: false
   resume_model_name: ""   # path to a .pth checkpoint, only used if resume: true
-  model_name: ECAPATDNN   # ECAPATDNN | rawnet3 | xvector | dvector
+  model_name: xvector   # ECAPATDNN | rawnet3 | xvector | dvector
 
 # Backdoored model training (backdoor_model_train.py / attack_test.py)
 trigger_train:
@@ -47,7 +47,7 @@ trigger_train:
   optim: SGD               # SGD | Adam
   resume: false
   resume_model_name: ""
-  model_name: ECAPATDNN    # ECAPATDNN | rawnet3 | xvector | dvector
+  model_name: xvector    # ECAPATDNN | rawnet3 | xvector | dvector
 
 # Trigger generation (trigger_embed.py / poison_feature_extract.py)
 trigger_gen:
