@@ -1,0 +1,58 @@
+# -----------------------------------------------------------------------
+# Config template for FSMA-ASMA
+# Fill in the `path` section with real locations on your machine before
+# running any script. All other values are reasonable defaults inferred
+# from the code and the paper's experimental setup.
+# -----------------------------------------------------------------------
+
+# GPU index to use (passed straight to CUDA_VISIBLE_DEVICES). Use "-1" or
+# leave empty ("") to force CPU-only execution on machines without a GPU.
+GPU_num: "0"
+
+librosa:
+  sr: 16000                # sample rate used everywhere (16 kHz)
+
+path:
+  # Raw LibriSpeech wav files, one sub-folder per speaker id
+  # (e.g. benign_train_wavpath/1081/<utterance>.wav)
+  benign_train_wavpath: ./librispeech/train
+  benign_test_wavpath: ./librispeech/test
+
+  # Where benign_feature_extract.py writes the extracted .npy features
+  benign_train_npypath: ./datasets/train
+  benign_test_npypath: ./datasets/test
+
+  # Where trigger_embed.py / poison_feature_extract.py write the
+  # poisoned (trigger-embedded) dataset
+  poison_train_path: ./datasets/trigger_train
+  poison_test_path: ./datasets/trigger_test
+
+# Benign model training (benign_model_train.py)
+train:
+  batch_size: 64
+  epochs: 50
+  lr: 0.01
+  momentum: 0.9
+  optim: SGD              # SGD | Adam
+  resume: false
+  resume_model_name: ""   # path to a .pth checkpoint, only used if resume: true
+  model_name: ECAPATDNN   # ECAPATDNN | rawnet3 | xvector | dvector
+
+# Backdoored model training (backdoor_model_train.py / attack_test.py)
+trigger_train:
+  batch_size: 64
+  epochs: 50
+  lr: 0.01
+  momentum: 0.9
+  optim: SGD               # SGD | Adam
+  resume: false
+  resume_model_name: ""
+  model_name: ECAPATDNN    # ECAPATDNN | rawnet3 | xvector | dvector
+
+# Trigger generation (trigger_embed.py / poison_feature_extract.py)
+trigger_gen:
+  trigger_pattern: fre      # fre = FSMA (frequency modulation) | amp = ASMA (amplitude modulation)
+  target_label: "1081"      # must match one of the 50 speaker ids in datasets/librispeech_dataset.py::CLASSES
+  max_sample: 50             # number of poisoned samples to generate (paper uses a 5% poisoning rate)
+  reset_trigger_test: true   # regenerate the poisoned test set as well
+  timbre_type: ""            # only used by the VSVC baseline branch in attack_test.py
