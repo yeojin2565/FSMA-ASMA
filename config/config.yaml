@@ -15,8 +15,8 @@ librosa:
 path:
   # Raw LibriSpeech wav files, one sub-folder per speaker id
   # (e.g. benign_train_wavpath/1081/<utterance>.wav)
-  benign_train_wavpath: ./librispeech/train
-  benign_test_wavpath: ./librispeech/test
+  benign_train_wavpath: ./librispeech/train-clean-100
+  benign_test_wavpath: ./librispeech/test-clean
 
   # Where benign_feature_extract.py writes the extracted .npy features
   benign_train_npypath: ./datasets/train
